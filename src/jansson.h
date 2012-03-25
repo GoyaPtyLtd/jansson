@@ -225,6 +225,9 @@ int json_equal(json_t *value1, json_t *value2);
 json_t *json_copy(json_t *value);
 json_t *json_deep_copy(json_t *value);
 
+/* path */
+
+json_t *json_path_get(const json_t *json, const char *path);
 
 /* decoding */
 
