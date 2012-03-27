@@ -6,70 +6,65 @@
  */
 
 #include <string.h>
+#include <assert.h>
 
 #include <jansson.h>
 #include "jansson_private.h"
 
+
 json_t *json_path_get(const json_t *json, const char *path)
 {
-    static const char *root_token = "$", *path_delim = ".[", *array_close = "]";
-    static const char array_delim = '[';
-    json_t *target;
-    char *token = NULL, *buf, *peek, *endptr;
+    static const char root_chr = '$', array_open = '[';
+    static const char *path_delims = ".[", *array_close = "]";
+    const json_t *cursor;
+    char *token, *buf, *peek, *endptr, delim = '\0';
     const char *expect;
-    int error = 0;
 
-    if (!json || !path || path[0] != '$')
+    if (!json || !path || path[0] != root_chr)
         return NULL;
     else
         buf = jsonp_strdup(path);
 
-    peek = buf;
-    target = (json_t *)json;
-    expect = root_token;
+    peek = buf + 1;
+    cursor = json;
+    token = NULL;
+    expect = path_delims;
 
-    while (peek && *peek && target)
+    while (peek && *peek && cursor)
     {
-        char stop_chr;
-
+        char *last_peek = peek;
         peek = strpbrk(peek, expect);
         if (peek) {
-            stop_chr = *peek;
+            if (!token && peek != last_peek)
+                goto fail;
+            delim = *peek;
             *peek++ = '\0';
-        } else {
-            if (expect == path_delim && token) {
-                stop_chr = '\0';
-            } else {
-                error = 1;  // incomplete path
-                break;
-            }
+        } else if (expect != path_delims || !token) {
+            goto fail;
         }
 
-        if (expect == path_delim) {
+        if (expect == path_delims) {
             if (token) {
-                target = json_object_get(target, token);
+                cursor = json_object_get(cursor, token);
             }
-            expect = (stop_chr == array_delim ? array_close : path_delim);
+            expect = (delim == array_open ? array_close : path_delims);
             token = peek;
         } else if (expect == array_close) {
             size_t index = strtol(token, &endptr, 0);
-            if (*endptr) {  // invalid number format
-                error = 1;
-                break;
-            }
-            target = json_array_get(target, index);
+            if (*endptr)
+                goto fail;
+            cursor = json_array_get(cursor, index);
             token = NULL;
-            expect = path_delim;
-        } else if (expect == root_token) {
-            expect = path_delim;
+            expect = path_delims;
         } else {
-            error = 1;  // expecting nothing?
-            break;
+            goto fail;
         }
     }
 
     jsonp_free(buf);
-
-    return error ? NULL : target;
+    return (json_t *)cursor;
+fail:
+    jsonp_free(buf);
+    return NULL;
 }
 
