@@ -68,3 +68,134 @@ fail:
     return NULL;
 }
 
+json_t *json_path_set(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error)
+{
+    static const char root_chr = '$', array_open = '[', object_delim = '.';
+    static const char const *path_delims = ".[", *array_close = "]";
+
+    json_t *cursor, *parent = NULL;
+    char *token, *buf, *peek, delim = '\0';
+    const char *expect;
+    int index_saved = -1;
+
+    jsonp_error_init(error, "<path>");
+
+    if (!json || !path || flags) {
+        jsonp_error_set(error, -1, -1, 0, "invalid argument");
+        return NULL;
+    } else {
+        buf = jsonp_strdup(path);
+    }
+
+    if (buf[0] != root_chr) {
+        jsonp_error_set(error, -1, -1, 0, "path should start with $");
+        goto fail;
+    }
+
+    peek = buf + 1;
+    cursor = json;
+    token = NULL;
+    expect = path_delims;
+
+    while (peek && *peek && cursor)
+    {
+        char *last_peek = peek;
+        peek = strpbrk(last_peek, expect);
+
+        if (peek) {
+            if (!token && peek != last_peek) {
+                jsonp_error_set(error, -1, -1, last_peek - buf, "unexpected trailing chars");
+                goto fail;
+            }
+            delim = *peek;
+            *peek++ = '\0';
+        } else { // end of path
+            if (expect == path_delims) {
+                break;
+            } else {
+                jsonp_error_set(error, -1, -1, peek - buf, "missing ']'?");
+                goto fail;
+            }
+        }
+
+        if (expect == path_delims) {
+            if (token) {
+                if (token[0] == '\0') {
+                    jsonp_error_set(error, -1, -1, peek - buf, "empty token");
+                    goto fail;
+                }
+
+                parent = cursor;
+                cursor = json_object_get(parent, token);
+
+                if (!cursor) {
+                    if (!json_is_object(parent)) {
+                        jsonp_error_set(error, -1, -1, peek - buf, "object expected");
+                        goto fail;
+                    }
+                    if (delim == object_delim) {
+                        cursor = json_object();
+                        json_object_set_new(parent, token, cursor);
+                    } else {
+                        jsonp_error_set(error, -1, -1, peek - buf, "new array is not allowed");
+                        goto fail;
+                    }
+                }
+            }
+            expect = (delim == array_open ? array_close : path_delims);
+            token = peek;
+        } else if (expect == array_close) {
+            char *endptr;
+            size_t index;
+
+            parent = cursor;
+            if (!json_is_array(parent)) {
+                jsonp_error_set(error, -1, -1, peek - buf, "array expected");
+                goto fail;
+            }
+            index = strtol(token, &endptr, 0);
+            if (*endptr) {
+                jsonp_error_set(error, -1, -1, peek - buf, "invalid array index");
+                goto fail;
+            }
+            cursor = json_array_get(parent, index);
+            if (!cursor) {
+                jsonp_error_set(error, -1, -1, peek - buf, "array index out of bound");
+                goto fail;
+            }
+            index_saved = index;
+            token = NULL;
+            expect = path_delims;
+        } else {
+            assert(1);
+            jsonp_error_set(error, -1, -1, peek - buf, "kidding me");
+            goto fail;
+        }
+    }
+
+    if (token) {
+        if (value) {
+            if (json_is_object(cursor)) {
+                json_object_set(cursor, token, value);
+            } else {
+                jsonp_error_set(error, -1, -1, peek - buf, "object expected");
+                goto fail;
+            }
+        }
+        cursor = json_object_get(cursor, token);
+    } else if (index_saved != -1 && json_is_array(parent)) {
+        if (value)
+            json_array_set(parent, index_saved, value);
+        cursor = json_array_get(parent, index_saved);
+    } else {
+        jsonp_error_set(error, -1, -1, peek - buf, "invalid path");
+        goto fail;
+    }
+
+    jsonp_free(buf);
+    return cursor;
+
+fail:
+    jsonp_free(buf);
+    return NULL;
+}
