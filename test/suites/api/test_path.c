@@ -127,90 +127,90 @@ static void test_set()
     json_t *value = json_integer(21);
 
     /* normal cases */
-    if(json_path_set(json, "$.key", value, 0, &error) == NULL
+    if(json_path_set(json, "$.key", value, 0, &error) < 0
             || !json_equal(json_path_get(json, "$.key"), value)) {
         dump_error();
         fail("json_path_set() fails to set $.key");
     }
 
-    if(json_path_set(json, "$.obj.key", value, 0, &error) == NULL
+    if(json_path_set(json, "$.obj.key", value, 0, &error) < 0
             || !json_equal(json_path_get(json, "$.obj.key"), value)) {
         dump_error();
         fail("json_path_set() fails to set $.obj.key");
     }
 
-    if(json_path_set(json, "$.arr[0]", value, 0, &error) == NULL
+    if(json_path_set(json, "$.arr[0]", value, 0, &error) <0 
             || !json_equal(json_path_get(json, "$.arr[0]"), value)) {
         dump_error();
         fail("json_path_set() fails to set $.arr[0]");
     }
 
-    if(json_path_set(json, "$.arr[1].key", value, 0, &error) == NULL
+    if(json_path_set(json, "$.arr[1].key", value, 0, &error) < 0
             || !json_equal(json_path_get(json, "$.arr[1].key"), value)) {
         dump_error();
         fail("json_path_set() fails to set $.arr[1].key");
     }
 
-    if(json_path_set(json, "$.new_key", value, 0, &error) == NULL
+    if(json_path_set(json, "$.new_key", value, 0, &error) < 0
             || !json_equal(json_path_get(json, "$.new_key"), value)) {
         dump_error();
         fail("json_path_set() fails to set new key");
     }
 
-    if(json_path_set(json, "$.obj.new_key", value, 0, &error) == NULL
+    if(json_path_set(json, "$.obj.new_key", value, 0, &error) < 0
             || !json_equal(json_path_get(json, "$.obj.new_key"), value)) {
         dump_error();
         fail("json_path_set() fails to set $.obj.new_key");
     }
 
-    if(json_path_set(json, "$.arr[1].new_key", value, 0, &error) == NULL
+    if(json_path_set(json, "$.arr[1].new_key", value, 0, &error) < 0
             || !json_equal(json_path_get(json, "$.arr[1].new_key"), value)) {
         dump_error();
         fail("json_path_set() fails to set $.obj.arr[1].new_key");
     }
 
     /* error cases */
-    if(json_path_set(json, "$", json_integer(21), 0, &error) || strcmp(error.text, "invalid path")) {
+    if(json_path_set(json, "$", json_integer(21), 0, &error) == 0 || strcmp(error.text, "invalid path")) {
         fprintf(stderr, "error at %d:\n%s", error.position, error.text);
         fail("json_path_set() fails to detect error: invalid path");
     }
 
-    if(json_path_set(json, "obj", json_integer(21), 0, &error) || strcmp(error.text, "path should start with $")) {
+    if(json_path_set(json, "obj", json_integer(21), 0, &error) == 0 || strcmp(error.text, "path should start with $")) {
         dump_error();
         fail("json_path_set() fails to detect error: path should start with $");
     }
 
-    if(json_path_set(json, "$obj.key", json_integer(21), 0, &error) || strcmp(error.text, "unexpected trailing chars")) {
+    if(json_path_set(json, "$obj.key", json_integer(21), 0, &error) == 0 || strcmp(error.text, "unexpected trailing chars")) {
         dump_error();
         fail("json_path_set() fails to detect error: unexpected trailing chars");
     }
 
-    if(json_path_set(json, "$.arr[0", json_integer(21), 0, &error) || strcmp(error.text, "missing ']'?")) {
+    if(json_path_set(json, "$.arr[0", json_integer(21), 0, &error) == 0 || strcmp(error.text, "missing ']'?")) {
         dump_error();
         fail("json_path_set() fails to detect error: missing ']'?");
     }
 
-    if(json_path_set(json, "$..obj", json_integer(21), 0, &error) || strcmp(error.text, "empty token")) {
+    if(json_path_set(json, "$..obj", json_integer(21), 0, &error) == 0 || strcmp(error.text, "empty token")) {
         dump_error();
         fail("json_path_set() fails to detect error: empty token");
     }
 
-    if(json_path_set(json, "$.arr.0", json_integer(21), 0, &error) || strcmp(error.text, "object expected")) {
+    if(json_path_set(json, "$.arr.0", json_integer(21), 0, &error) == 0 || strcmp(error.text, "object expected")) {
         dump_error();
         fail("json_path_set() fails to detect error: object expected");
     }
 
-    if(json_path_set(json, "$.obj[0]", json_integer(21), 0, &error) || strcmp(error.text, "array expected")) {
+    if(json_path_set(json, "$.obj[0]", json_integer(21), 0, &error) == 0 || strcmp(error.text, "array expected")) {
         dump_error();
         fail("json_path_set() fails to detect error: array expected");
     }
 
-    if(json_path_set(json, "$.new_arr[0]", json_integer(21), 0, &error) || strcmp(error.text, "new array is not allowed")) {
+    if(json_path_set(json, "$.new_arr[0]", json_integer(21), 0, &error) == 0 || strcmp(error.text, "new array is not allowed")) {
         dump_error();
         fail("json_path_set() fails to detect error: new array is not allowed");
     }
 
-    if(json_path_set(json, "$.arr[3]", json_integer(21), 0, &error) || strcmp(error.text, "array index out of bound")) {
+    if(json_path_set(json, "$.arr[3]", json_integer(21), 0, &error) == 0 || strcmp(error.text, "array index out of bound")) {
         dump_error();
         fail("json_path_set() fails to detect error: array index out of bound");
     }

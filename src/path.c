@@ -68,7 +68,7 @@ fail:
     return NULL;
 }
 
-json_t *json_path_set(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error)
+int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error)
 {
     static const char root_chr = '$', array_open = '[', object_delim = '.';
     static const char const *path_delims = ".[", *array_close = "]";
@@ -82,7 +82,7 @@ json_t *json_path_set(json_t *json, const char *path, json_t *value, size_t flag
 
     if (!json || !path || flags) {
         jsonp_error_set(error, -1, -1, 0, "invalid argument");
-        return NULL;
+        return -1;
     } else {
         buf = jsonp_strdup(path);
     }
@@ -193,9 +193,9 @@ json_t *json_path_set(json_t *json, const char *path, json_t *value, size_t flag
     }
 
     jsonp_free(buf);
-    return cursor;
+    return 0;
 
 fail:
     jsonp_free(buf);
-    return NULL;
+    return -1;
 }
