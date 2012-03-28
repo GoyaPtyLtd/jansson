@@ -80,7 +80,7 @@ int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, j
 
     jsonp_error_init(error, "<path>");
 
-    if (!json || !path || flags) {
+    if (!json || !path || flags || !value) {
         jsonp_error_set(error, -1, -1, 0, "invalid argument");
         return -1;
     } else {
@@ -174,18 +174,15 @@ int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, j
     }
 
     if (token) {
-        if (value) {
-            if (json_is_object(cursor)) {
-                json_object_set(cursor, token, value);
-            } else {
-                jsonp_error_set(error, -1, -1, peek - buf, "object expected");
-                goto fail;
-            }
+        if (json_is_object(cursor)) {
+            json_object_set(cursor, token, value);
+        } else {
+            jsonp_error_set(error, -1, -1, peek - buf, "object expected");
+            goto fail;
         }
         cursor = json_object_get(cursor, token);
     } else if (index_saved != -1 && json_is_array(parent)) {
-        if (value)
-            json_array_set(parent, index_saved, value);
+        json_array_set(parent, index_saved, value);
         cursor = json_array_get(parent, index_saved);
     } else {
         jsonp_error_set(error, -1, -1, peek - buf, "invalid path");
