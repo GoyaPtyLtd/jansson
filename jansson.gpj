@@ -1,0 +1,22 @@
+#!gbuild
+[Library]
+	-object_dir=objs\jansson
+	-Isrc
+	:postexecShell='for %I in (ExtLibs\\jansson\\src\\jansson.h  ExtLibs\\jansson\\src\\jansson_config.h) do copy %I src\\include'
+src\value.c
+src\dump.c
+src\error.c
+src\hashtable.c
+src\hashtable.h
+src\jansson.h
+src\jansson_config.h
+src\jansson_private.h
+src\load.c
+src\memory.c
+src\pack_unpack.c
+src\strbuffer.c
+src\strbuffer.h
+src\strconv.c
+src\utf.c
+src\utf.h
+src\path.c

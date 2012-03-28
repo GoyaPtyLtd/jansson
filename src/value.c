@@ -597,6 +597,7 @@ static json_t *json_array_deep_copy(json_t *array)
     return result;
 }
 
+
 /*** string ***/
 
 json_t *json_string_nocheck(const char *value)
