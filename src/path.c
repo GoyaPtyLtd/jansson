@@ -11,6 +11,7 @@
 #include <jansson.h>
 #include "jansson_private.h"
 
+
 json_t *json_path_get(const json_t *json, const char *path)
 {
     static const char root_chr = '$', array_open = '[';
@@ -70,7 +71,7 @@ fail:
 int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error)
 {
     static const char root_chr = '$', array_open = '[', object_delim = '.';
-    static const char *path_delims = ".[", *array_close = "]";
+    static const char const *path_delims = ".[", *array_close = "]";
 
     json_t *cursor, *parent = NULL;
     char *token, *buf, *peek, delim = '\0';
@@ -82,7 +83,7 @@ int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, j
     if (!json || !path || flags) {
         jsonp_error_set(error, -1, -1, 0, "invalid argument");
         return -1;
-            } else {
+    } else {
         buf = jsonp_strdup(path);
     }
 
@@ -122,7 +123,7 @@ int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, j
                 if (token[0] == '\0') {
                     jsonp_error_set(error, -1, -1, peek - buf, "empty token");
                     goto fail;
-            }
+                }
 
                 parent = cursor;
                 cursor = json_object_get(parent, token);
