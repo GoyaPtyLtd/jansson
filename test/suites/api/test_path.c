@@ -170,6 +170,16 @@ static void test_set()
     }
 
     /* error cases */
+
+    if(json_path_set(NULL, "$.key", value, 0, &error) == 0 || strcmp(error.text, "invalid argument"))
+        fail("json_path_set() fails to detect error: invalid argument");
+
+    if(json_path_set(json, NULL, value, 0, &error) == 0 || strcmp(error.text, "invalid argument"))
+        fail("json_path_set() fails to detect error: invalid argument");
+
+    if(json_path_set(json, "$.key", NULL, 0, &error) == 0 || strcmp(error.text, "invalid argument"))
+        fail("json_path_set() fails to detect error: invalid argument");
+
     if(json_path_set(json, "$", json_integer(21), 0, &error) == 0 || strcmp(error.text, "invalid path")) {
         fprintf(stderr, "error at %d:\n%s", error.position, error.text);
         fail("json_path_set() fails to detect error: invalid path");
