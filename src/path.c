@@ -176,7 +176,6 @@ int json_path_set_new(json_t *json, const char *path, json_t *value, size_t flag
     if (token) {
         if (json_is_object(cursor)) {
             json_object_set(cursor, token, value);
-            json_decref(value);
         } else {
             jsonp_error_set(error, -1, -1, peek - buf, "object expected");
             goto fail;
@@ -184,17 +183,18 @@ int json_path_set_new(json_t *json, const char *path, json_t *value, size_t flag
         cursor = json_object_get(cursor, token);
     } else if (index_saved != -1 && json_is_array(parent)) {
         json_array_set(parent, index_saved, value);
-        json_decref(value);
         cursor = json_array_get(parent, index_saved);
     } else {
         jsonp_error_set(error, -1, -1, peek - buf, "invalid path");
         goto fail;
     }
 
+    json_decref(value);
     jsonp_free(buf);
     return 0;
 
 fail:
+    json_decref(value);
     jsonp_free(buf);
     return -1;
 }
