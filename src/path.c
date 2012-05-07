@@ -74,7 +74,7 @@ int json_path_set_new(json_t *json, const char *path, json_t *value, size_t flag
     static const char const *path_delims = ".[", *array_close = "]";
 
     json_t *cursor, *parent = NULL;
-    char *token, *buf, *peek, delim = '\0';
+    char *token, *buf = NULL, *peek, delim = '\0';
     const char *expect;
     int index_saved = -1;
 
