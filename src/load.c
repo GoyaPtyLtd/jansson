@@ -13,7 +13,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <jansson.h>
+#include "jansson.h"
 #include "jansson_private.h"
 #include "strbuffer.h"
 #include "utf.h"
@@ -32,12 +32,12 @@
 #define TOKEN_NULL           261
 
 /* Locale independent versions of isxxx() functions */
-#define l_isupper(c)  ('A' <= c && c <= 'Z')
-#define l_islower(c)  ('a' <= c && c <= 'z')
+#define l_isupper(c)  ('A' <= (c) && (c) <= 'Z')
+#define l_islower(c)  ('a' <= (c) && (c) <= 'z')
 #define l_isalpha(c)  (l_isupper(c) || l_islower(c))
-#define l_isdigit(c)  ('0' <= c && c <= '9')
+#define l_isdigit(c)  ('0' <= (c) && (c) <= '9')
 #define l_isxdigit(c) \
-    (l_isdigit(c) || 'A' <= c || c <= 'F' || 'a' <= c || c <= 'f')
+    (l_isdigit(c) || 'A' <= (c) || (c) <= 'F' || 'a' <= (c) || (c) <= 'f')
 
 /* Read one byte from stream, convert to unsigned char, then int, and
    return. return EOF on end of file. This corresponds to the
@@ -48,7 +48,7 @@ typedef struct {
     get_func get;
     void *data;
     char buffer[5];
-    int buffer_pos;
+    size_t buffer_pos;
     int state;
     int line;
     int column, last_column;
@@ -87,6 +87,7 @@ static void error_set(json_error_t *error, const lex_t *lex,
 
     va_start(ap, msg);
     vsnprintf(msg_text, JSON_ERROR_TEXT_LENGTH, msg, ap);
+    msg_text[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
     va_end(ap);
 
     if(lex)
@@ -102,6 +103,7 @@ static void error_set(json_error_t *error, const lex_t *lex,
             if(lex->saved_text.length <= 20) {
                 snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH,
                          "%s near '%s'", msg_text, saved_text);
+                msg_with_context[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
                 result = msg_with_context;
             }
         }
@@ -114,6 +116,7 @@ static void error_set(json_error_t *error, const lex_t *lex,
             else {
                 snprintf(msg_with_context, JSON_ERROR_TEXT_LENGTH,
                          "%s near end of file", msg_text);
+                msg_with_context[JSON_ERROR_TEXT_LENGTH - 1] = '\0';
                 result = msg_with_context;
             }
         }
@@ -444,7 +447,11 @@ out:
 }
 
 #if JSON_INTEGER_IS_LONG_LONG
+#ifdef _MSC_VER // Microsoft Visual Studio
+#define json_strtoint     _strtoi64
+#else
 #define json_strtoint     strtoll
+#endif
 #else
 #define json_strtoint     strtol
 #endif
