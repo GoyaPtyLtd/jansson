@@ -82,7 +82,7 @@ int json_path_set_new(json_t *json, const char *path, json_t *value, size_t flag
 
     if (!json || !path || flags || !value) {
         jsonp_error_set(error, -1, -1, 0, "invalid argument");
-        return -1;
+        goto fail;
     } else {
         buf = jsonp_strdup(path);
     }
