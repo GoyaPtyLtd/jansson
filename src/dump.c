@@ -38,7 +38,7 @@ static int dump_to_file(const char *buffer, size_t size, void *data)
 }
 
 /* 32 spaces (the maximum indentation size) */
-static char whitespace[] = "                                ";
+static const char whitespace[] = "                                ";
 
 static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t dump, void *data)
 {
@@ -62,7 +62,7 @@ static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t 
     return 0;
 }
 
-static int dump_string(const char *str, int ascii, json_dump_callback_t dump, void *data)
+static int dump_string(const char *str, json_dump_callback_t dump, void *data, size_t flags)
 {
     const char *pos, *end;
     int32_t codepoint;
@@ -87,8 +87,12 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
             if(codepoint == '\\' || codepoint == '"' || codepoint < 0x20)
                 break;
 
+            /* slash */
+            if((flags & JSON_ESCAPE_SLASH) && codepoint == '/')
+                break;
+
             /* non-ASCII */
-            if(ascii && codepoint > 0x7F)
+            if((flags & JSON_ENSURE_ASCII) && codepoint > 0x7F)
                 break;
 
             pos = end;
@@ -102,7 +106,7 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
         if(end == pos)
             break;
 
-        /* handle \, ", and control codes */
+        /* handle \, /, ", and control codes */
         length = 2;
         switch(codepoint)
         {
@@ -113,6 +117,7 @@ static int dump_string(const char *str, int ascii, json_dump_callback_t dump, vo
             case '\n': text = "\\n"; break;
             case '\r': text = "\\r"; break;
             case '\t': text = "\\t"; break;
+            case '/':  text = "\\/"; break;
             default:
             {
                 /* codepoint is in BMP */
@@ -166,8 +171,6 @@ static int object_key_compare_serials(const void *key1, const void *key2)
 static int do_dump(const json_t *json, size_t flags, int depth,
                    json_dump_callback_t dump, void *data)
 {
-    int ascii = flags & JSON_ENSURE_ASCII ? 1 : 0;
-
     switch(json_typeof(json)) {
         case JSON_NULL:
             return dump("null", 4, data);
@@ -206,7 +209,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         }
 
         case JSON_STRING:
-            return dump_string(json_string_value(json), ascii, dump, data);
+            return dump_string(json_string_value(json), dump, data, flags);
 
         case JSON_ARRAY:
         {
@@ -327,7 +330,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     value = json_object_get(json, key);
                     assert(value);
 
-                    dump_string(key, ascii, dump, data);
+                    dump_string(key, dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(value, flags, depth + 1, dump, data))
                     {
@@ -364,7 +367,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                 {
                     void *next = json_object_iter_next((json_t *)json, iter);
 
-                    dump_string(json_object_iter_key(iter), ascii, dump, data);
+                    dump_string(json_object_iter_key(iter), dump, data, flags);
                     if(dump(separator, separator_length, data) ||
                        do_dump(json_object_iter_value(iter), flags, depth + 1,
                                dump, data))

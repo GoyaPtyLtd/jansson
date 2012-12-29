@@ -31,7 +31,7 @@ test_simple_SOURCES = test_simple.c util.h
 test_unpack_SOURCES = test_unpack.c util.h
 test_path_SOURCES = test_path.c util.h
 
-AM_CPPFLAGS = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CFLAGS = -Wall -Werror
 LDFLAGS = -static  # for speed and Valgrind
 LDADD = $(top_builddir)/src/libjansson.la
