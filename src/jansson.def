@@ -36,6 +36,7 @@ EXPORTS
     json_object_update
     json_object_update_existing
     json_object_update_missing
+    json_object_deep_update
     json_object_iter
     json_object_iter_at
     json_object_iter_next
