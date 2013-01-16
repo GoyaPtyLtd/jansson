@@ -8,7 +8,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <jansson.h>
+#include "jansson.h"
 #include "jansson_private.h"
 
 
@@ -71,7 +71,7 @@ fail:
 int json_path_set_new(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error)
 {
     static const char root_chr = '$', array_open = '[', object_delim = '.';
-    static const char const *path_delims = ".[", *array_close = "]";
+    static const char *path_delims = ".[", *array_close = "]";
 
     json_t *cursor, *parent = NULL;
     char *token, *buf = NULL, *peek, delim = '\0';
