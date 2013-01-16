@@ -1,4 +1,4 @@
-EXTRA_DIST = jansson_config.h.win32
+EXTRA_DIST = jansson.def
 
 include_HEADERS = jansson.h jansson_config.h
 
@@ -20,8 +20,9 @@ libjansson_la_SOURCES = \
 	utf.h \
 	value.c
 libjansson_la_LDFLAGS = \
+	-no-undefined \
 	-export-symbols-regex '^json_' \
-	-version-info 7:0:3
+	-version-info 8:0:4
 
 if GCC
 # These flags are gcc specific

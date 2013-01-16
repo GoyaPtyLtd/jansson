@@ -255,8 +255,8 @@ returns an error status.
 True, False and Null
 ====================
 
-These values are implemented as singletons, so each of these functions
-returns the same value each time.
+These three values are implemented as singletons, so the returned
+pointers won't change between invocations of these functions.
 
 .. function:: json_t *json_true(void)
 
@@ -269,6 +269,17 @@ returns the same value each time.
    .. refcounting:: new
 
    Returns the JSON false value.
+
+.. function:: json_t *json_boolean(val)
+
+   .. refcounting:: new
+
+   Returns JSON false if ``val`` is zero, and JSON true otherwise.
+   This is a macro, and equivalent to ``val ? json_true() :
+   json_false()``.
+
+   .. versionadded:: 2.4
+
 
 .. function:: json_t *json_null(void)
 
@@ -798,6 +809,11 @@ can be ORed together to obtain *flags*.
 
    .. versionadded:: 2.1
 
+``JSON_ESCAPE_SLASH``
+   Escape the ``/`` characters in strings with ``\/``.
+
+   .. versionadded:: 2.4
+
 The following functions perform the actual JSON encoding. The result
 is in UTF-8.
 
@@ -1101,7 +1117,7 @@ More examples::
   json_pack("{s:i, s:i}", "foo", 42, "bar", 7);
 
   /* Build the JSON array [[1, 2], {"cool": true}] */
-  json_pack("[[i,i],{s:b]]", 1, 2, "cool", 1);
+  json_pack("[[i,i],{s:b}]", 1, 2, "cool", 1);
 
 
 .. _apiref-unpack:
@@ -1219,7 +1235,7 @@ The following functions compose the parsing and validation API:
    modifying the structure or contents of a value reachable from
    ``root``.
 
-   If the ``O`` and ``o`` format character are not used, it's
+   If the ``O`` and ``o`` format characters are not used, it's
    perfectly safe to cast a ``const json_t *`` variable to plain
    ``json_t *`` when used with these functions.
 
