@@ -199,8 +199,8 @@ int json_object_deep_update(json_t *object, json_t *other, size_t flags)
         return -1;
 
 
-    json_object_foreach(object, key, value) {
-        other_value = json_object_get(other, key);
+    json_object_foreach(other, key, other_value) {
+        value = json_object_get(object, key);
         if (json_is_object(value) && json_is_object(other_value)) {
             json_object_deep_update(value, other_value, flags);
         } else if (json_is_array(value) && json_is_array(other_value)) {
@@ -210,18 +210,18 @@ int json_object_deep_update(json_t *object, json_t *other, size_t flags)
                 json_array_deep_update(value, other_value, flags);
             else
                 json_object_set_nocheck(object, key, other_value);
-        } else if (flags & JSON_SAME_TYPE_ONLY) {
+        } else if (!value && !(flags & JSON_SKIP_NEW_KEYS)) {
+            json_object_set_nocheck(object, key, other_value);
+        } else if (value && !(flags & JSON_SKIP_OLD_KEYS)){
+            if (flags & JSON_SAME_TYPE_ONLY) {
             if ((json_is_boolean(value) && json_is_boolean(other_value))
                     || (json_is_string(value) && json_is_string(other_value))
                     || (json_is_number(value) && json_is_number(other_value)))
                 json_object_set_nocheck(object, key, other_value);
-        } else if (other_value && !(flags & JSON_SKIP_OLD_KEYS)){
+            } else {
             json_object_set_nocheck(object, key, other_value);
         }
     }
-
-    if (!(flags & JSON_SKIP_NEW_KEYS)) {
-        json_object_update_missing(object, other);
     }
 
     return 0;
