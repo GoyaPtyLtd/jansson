@@ -17,6 +17,7 @@
     <ClCompile Include="..\..\src\load.c" />
     <ClCompile Include="..\..\src\memory.c" />
     <ClCompile Include="..\..\src\pack_unpack.c" />
+    <ClCompile Include="..\..\src\path.c" />
     <ClCompile Include="..\..\src\strbuffer.c" />
     <ClCompile Include="..\..\src\strconv.c" />
     <ClCompile Include="..\..\src\utf.c" />
