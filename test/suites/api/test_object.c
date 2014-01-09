@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
  *
  * Jansson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
@@ -94,7 +94,7 @@ static void test_update()
     /* perform the same update again */
 
     if(json_object_update(object, other))
-        fail("unable to update an empty object");
+        fail("unable to update a non-empty object");
 
     if(json_object_size(object) != 5)
         fail("invalid size after update");
@@ -479,7 +479,7 @@ static void test_preserve_order()
     json_decref(object);
 }
 
-static void test_foreach()
+static void test_object_foreach()
 {
     const char *key;
     json_t *object1, *object2, *value;
@@ -507,5 +507,5 @@ static void run_tests()
     test_set_nocheck();
     test_iterators();
     test_preserve_order();
-    test_foreach();
+    test_object_foreach();
 }
