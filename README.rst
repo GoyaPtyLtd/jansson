@@ -1,9 +1,9 @@
 Jansson README
 ==============
 
-.. image:: https://travis-ci.org/akheron/jansson.png
+.. image:: https://travis-ci.org/rogerz/jansson.png
   :alt: Build status
-  :target: https://travis-ci.org/akheron/jansson
+  :target: https://travis-ci.org/rogerz/jansson
 
 Jansson_ is a C library for encoding, decoding and manipulating JSON
 data. Its main features and design principles are:
@@ -21,6 +21,10 @@ data. Its main features and design principles are:
 Jansson is licensed under the `MIT license`_; see LICENSE in the
 source distribution for details.
 
+Enhancement in this fork
+---------------------
+
+See Wiki_
 
 Compilation and Installation
 ----------------------------
@@ -61,3 +65,4 @@ Then, point your browser to ``doc/_build/html/index.html``. Sphinx_
 .. _Jansson: http://www.digip.org/jansson/
 .. _`MIT license`: http://www.opensource.org/licenses/mit-license.php
 .. _Sphinx: http://sphinx.pocoo.org/
+.. _Wiki: https://github.com/rogerz/jansson/wiki
