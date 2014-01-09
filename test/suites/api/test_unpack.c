@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2009-2013 Petri Lehtinen <petri@digip.org>
  * Copyright (c) 2010-2012 Graeme Smecher <graeme.smecher@mail.mcgill.ca>
  *
  * Jansson is free software; you can redistribute it and/or modify
@@ -17,6 +17,7 @@ static void run_tests()
     int i1, i2, i3;
     json_int_t I1;
     int rv;
+    size_t z;
     double f;
     char *s;
 
@@ -81,6 +82,13 @@ static void run_tests()
         fail("json_unpack string failed");
     json_decref(j);
 
+    /* string with length (size_t) */
+    j = json_string("foo");
+    rv = json_unpack(j, "s%", &s, &z);
+    if(rv || strcmp(s, "foo") || z != 3)
+        fail("json_unpack string with length (size_t) failed");
+    json_decref(j);
+
     /* empty object */
     j = json_object();
     if(json_unpack(j, "{}"))
@@ -96,14 +104,14 @@ static void run_tests()
     /* non-incref'd object */
     j = json_object();
     rv = json_unpack(j, "o", &j2);
-    if(j2 != j || j->refcount != 1)
+    if(rv || j2 != j || j->refcount != 1)
         fail("json_unpack object failed");
     json_decref(j);
 
     /* incref'd object */
     j = json_object();
     rv = json_unpack(j, "O", &j2);
-    if(j2 != j || j->refcount != 2)
+    if(rv || j2 != j || j->refcount != 2)
         fail("json_unpack object failed");
     json_decref(j);
     json_decref(j);
