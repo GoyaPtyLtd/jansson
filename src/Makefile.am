@@ -12,6 +12,7 @@ libjansson_la_SOURCES = \
 	load.c \
 	memory.c \
 	pack_unpack.c \
+	path.c \
 	strbuffer.c \
 	strbuffer.h \
 	strconv.c \
