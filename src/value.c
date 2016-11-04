@@ -787,6 +787,22 @@ json_t *json_integer(json_int_t value)
     return &integer->json;
 }
 
+// support requirements for BaseElements that there are no rounding issues with numbers
+
+json_t *json_integer_with_string(const json_int_t value, const char * string_value)
+{
+	json_integer_t *integer = jsonp_malloc(sizeof(json_integer_t));
+	if(!integer)
+		return NULL;
+	json_init(&integer->json, JSON_INTEGER);
+
+	integer->value = value;
+	strcpy(integer->string_value, string_value);
+	integer->length = strlen (string_value);
+	
+	return &integer->json;
+}
+
 json_int_t json_integer_value(const json_t *json)
 {
     if(!json_is_integer(json))
@@ -839,6 +855,28 @@ json_t *json_real(double value)
     return &real->json;
 }
 
+// support requirements for BaseElements that there are no rounding issues with numbers
+
+json_t *json_real_with_string(const double value, const char * string_value)
+{
+	json_real_t *real;
+
+	if(isnan(value) || isinf(value))
+		return NULL;
+
+	real = jsonp_malloc(sizeof(json_real_t));
+	if(!real)
+		return NULL;
+	json_init(&real->json, JSON_REAL);
+
+	real->value = value;
+	strcpy(real->string_value, string_value);
+	real->length = strlen(string_value);
+
+	return &real->json;
+
+}
+
 double json_real_value(const json_t *json)
 {
     if(!json_is_real(json))
@@ -883,6 +921,22 @@ double json_number_value(const json_t *json)
         return json_real_value(json);
     else
         return 0.0;
+}
+
+// support requirements for BaseElements that there are no rounding issues with numbers
+
+const char *json_number_value_as_string(const json_t *json)
+{
+	if(json_is_real(json)) {
+		return json_to_real(json)->string_value;
+	} else if ( json_is_integer(json)) {
+		return json_to_integer(json)->string_value;
+	} else {
+		return 0;
+	}
+
+	return 0;
+	
 }
 
 

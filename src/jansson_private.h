@@ -52,14 +52,27 @@ typedef struct {
     size_t length;
 } json_string_t;
 
+// added to support requirements for BaseElements that there are no rounding issues with numbers
+#define MAX_FILEMAKER_DIGITS 401
+
 typedef struct {
     json_t json;
     double value;
+    
+    // added to support requirements for BaseElements that there are no rounding issues with numbers
+    char string_value[MAX_FILEMAKER_DIGITS];
+	size_t length;
+
 } json_real_t;
 
 typedef struct {
     json_t json;
     json_int_t value;
+
+    // added to support requirements for BaseElements that there are no rounding issues with numbers
+    char string_value[MAX_FILEMAKER_DIGITS];
+	size_t length;
+
 } json_integer_t;
 
 #define json_to_object(json_)  container_of(json_, json_object_t, json)

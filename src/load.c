@@ -528,7 +528,7 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
 
         lex->token = TOKEN_INTEGER;
         lex->value.integer = value;
-        return 0;
+		goto number_string;
     }
 
     if(c == '.') {
@@ -566,8 +566,20 @@ static int lex_scan_number(lex_t *lex, int c, json_error_t *error)
         goto out;
     }
 
-    lex->token = TOKEN_REAL;
-    lex->value.real = value;
+	lex->token = TOKEN_REAL;
+	lex->value.real = value;
+
+// support requirements for BaseElements that there are no rounding issues with numbers
+
+number_string:
+	lex->token = lex->token;
+	const unsigned long length = lex->saved_text.length + 1;
+	char *t = jsonp_malloc(length);
+	memcpy(t, strbuffer_value(&lex->saved_text), lex->saved_text.length);
+	t[length] = '\0';
+	lex->value.string.val = t;
+	lex->value.string.len = length - 1;
+
     return 0;
 
 out:
@@ -826,15 +838,15 @@ static json_t *parse_value(lex_t *lex, size_t flags, json_error_t *error)
                     error_set(error, lex, "real number overflow");
                     return NULL;
                 }
-                json = json_real(value);
+				json = json_real_with_string(lex->value.real, lex->saved_text.value);
             } else {
-                json = json_integer(lex->value.integer);
+				json = json_integer_with_string(lex->value.integer, lex->saved_text.value);
             }
             break;
         }
 
         case TOKEN_REAL: {
-            json = json_real(lex->value.real);
+			json = json_real_with_string(lex->value.real, lex->saved_text.value);
             break;
         }
 

@@ -94,6 +94,10 @@ json_t *json_false(void);
 #define json_boolean(val)      ((val) ? json_true() : json_false())
 json_t *json_null(void);
 
+// added to support requirements for BaseElements that there are no rounding issues with numbers
+json_t *json_integer_with_string(const json_int_t value, const char * string_value);
+json_t *json_real_with_string(const double value, const char * string_value);
+
 static JSON_INLINE
 json_t *json_incref(json_t *json)
 {
@@ -207,6 +211,9 @@ json_int_t json_integer_value(const json_t *integer);
 double json_real_value(const json_t *real);
 double json_number_value(const json_t *json);
 
+// added to support requirements for BaseElements that there are no rounding issues with numbers
+const char *json_number_value_as_string(const json_t *json);
+
 int json_string_set(json_t *string, const char *value);
 int json_string_setn(json_t *string, const char *value, size_t len);
 int json_string_set_nocheck(json_t *string, const char *value);
@@ -238,6 +245,16 @@ int json_equal(json_t *value1, json_t *value2);
 json_t *json_copy(json_t *value);
 json_t *json_deep_copy(const json_t *value);
 
+/* path */
+
+json_t *json_path_get(const json_t *json, const char *path);
+int json_path_set_new(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error);
+
+static JSON_INLINE
+int json_path_set(json_t *json, const char *path, json_t *value, size_t flags, json_error_t *error)
+{
+    return json_path_set_new(json, path, json_incref(value), flags, error);
+}
 
 /* decoding */
 

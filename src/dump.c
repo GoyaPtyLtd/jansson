@@ -65,13 +65,17 @@ static int dump_indent(size_t flags, int depth, int space, json_dump_callback_t 
     return 0;
 }
 
-static int dump_string(const char *str, size_t len, json_dump_callback_t dump, void *data, size_t flags)
+// dont_quote parameter added to support requirements for BaseElements that there are no rounding issues with numbers
+    
+static int dump_string(const char *str, size_t len, json_dump_callback_t dump, void *data, size_t flags, const int dont_quote )
 {
     const char *pos, *end, *lim;
     int32_t codepoint;
 
-    if(dump("\"", 1, data))
-        return -1;
+	if (!dont_quote) {
+		if(dump("\"", 1, data))
+			return -1;
+	}
 
     end = pos = str;
     lim = str + len;
@@ -155,7 +159,12 @@ static int dump_string(const char *str, size_t len, json_dump_callback_t dump, v
         str = pos = end;
     }
 
-    return dump("\"", 1, data);
+	if(dont_quote) {
+		return dump("", 0, data);
+	} else {
+		return dump("\"", 1, data);
+	}
+
 }
 
 static int object_key_compare_keys(const void *key1, const void *key2)
@@ -188,35 +197,18 @@ static int do_dump(const json_t *json, size_t flags, int depth,
         case JSON_FALSE:
             return dump("false", 5, data);
 
+		// altered to support requirements for BaseElements that there are no rounding issues with numbers
+
         case JSON_INTEGER:
-        {
-            char buffer[MAX_INTEGER_STR_LENGTH];
-            int size;
-
-            size = snprintf(buffer, MAX_INTEGER_STR_LENGTH,
-                            "%" JSON_INTEGER_FORMAT,
-                            json_integer_value(json));
-            if(size < 0 || size >= MAX_INTEGER_STR_LENGTH)
-                return -1;
-
-            return dump(buffer, size, data);
-        }
-
         case JSON_REAL:
-        {
-            char buffer[MAX_REAL_STR_LENGTH];
-            int size;
-            double value = json_real_value(json);
-
-            size = jsonp_dtostr(buffer, MAX_REAL_STR_LENGTH, value);
-            if(size < 0)
-                return -1;
-
-            return dump(buffer, size, data);
-        }
+		{
+			const char *string = json_number_value_as_string(json);
+			const size_t length = strlen(string);
+			return dump_string(string, length, dump, data, flags, 1);
+		}
 
         case JSON_STRING:
-            return dump_string(json_string_value(json), json_string_length(json), dump, data, flags);
+            return dump_string(json_string_value(json), json_string_length(json), dump, data, flags, 0);
 
         case JSON_ARRAY:
         {
@@ -337,7 +329,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     value = json_object_get(json, key);
                     assert(value);
 
-                    dump_string(key, strlen(key), dump, data, flags);
+                    dump_string(key, strlen(key), dump, data, flags, 0);
                     if(dump(separator, separator_length, data) ||
                        do_dump(value, flags, depth + 1, dump, data))
                     {
@@ -375,7 +367,7 @@ static int do_dump(const json_t *json, size_t flags, int depth,
                     void *next = json_object_iter_next((json_t *)json, iter);
                     const char *key = json_object_iter_key(iter);
 
-                    dump_string(key, strlen(key), dump, data, flags);
+                    dump_string(key, strlen(key), dump, data, flags, 0);
                     if(dump(separator, separator_length, data) ||
                        do_dump(json_object_iter_value(iter), flags, depth + 1,
                                dump, data))
